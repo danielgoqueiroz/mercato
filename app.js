@@ -14,10 +14,14 @@ app.get("/", function (req, res) {
   res.send("Test Get");
 });
 
-app.post("/search", function (req, res) {
+app.post("/search", async function (req, res) {
   const terms = req.body.terms;
-  console.log(terms);
-  puppeteer.search(terms);
+  if (terms === undefined || terms === null || terms.length < 1) {
+    return res.status(403).send({message: `Valor de termos inválido: ${terms}`})
+  }
+
+  await puppeteer.search(terms);
+  console.log("End")
   res.send("Test Get");
 });
 
