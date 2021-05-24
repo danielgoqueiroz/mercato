@@ -1,0 +1,26 @@
+{
+  "name": "mercato",
+  "version": "1.0.0",
+  "description": "Acompanhamento de concorrentes",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon server app.js",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielgoqueiroz/mercato.git"
+  },
+  "author": "Daniel Gomes Queiroz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielgoqueiroz/mercato/issues"
+  },
+  "homepage": "https://github.com/danielgoqueiroz/mercato#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7",
+    "puppeteer": "^9.1.1",
+    "puppeteer-core": "^9.1.1"
+  }
+}
