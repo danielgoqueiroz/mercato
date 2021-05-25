@@ -17,11 +17,13 @@ app.get("/", function (req, res) {
 app.post("/search", async function (req, res) {
   const terms = req.body.terms;
   if (terms === undefined || terms === null || terms.length < 1) {
-    return res.status(403).send({message: `Valor de termos inválido: ${terms}`})
+    return res
+      .status(403)
+      .send({ message: `Valor de termos inválido: ${terms}` });
   }
 
   await puppeteer.search(terms);
-  console.log("End")
+  console.log("End");
   res.send("Test Get");
 });
 
