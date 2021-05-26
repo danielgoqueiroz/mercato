@@ -31,26 +31,27 @@ async function doInitialSearch(browser, term) {
 }
 
 async function searchByTerm(term) {
+  const headless = true
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: headless,
     args: [`--window-size=${width},${height}`],
     defaultViewport: {
       width,
       height,
     },
   });
-
-  let pageCount = 1;
-
+  
   const page = await doInitialSearch(browser, term);
-
+  
+  let pageCount = 1;
   const result = await extractResults(page);
-  console.log(result);
   result.searchTerm = term;
   result.dateSeach = new Date();
   result.page = pageCount;
 
-  await page.pdf({ path: `resources/${term}_${pageCount}.pdf`, format: "a4" });
+  if(headless) {
+    await page.pdf({ path: `resources/${term}_${pageCount}.pdf`, format: "a4" });
+  }
 
   // const hasNext = await page.evaluate((sel) => {
   //   const el = document.getElementById(sel);
@@ -66,7 +67,7 @@ async function searchByTerm(term) {
   //   hasNextPage = await hasNext(page);
   // }
   await browser.close();
-  return result;
+    return result;
 }
 
 async function extractResults(page) {
@@ -77,6 +78,8 @@ async function extractResults(page) {
         return;
       }
       let results = [];
+
+      //Itera nos resultados
       for (let index = 0; index < doc.length; index++) {
         const resultElement = doc[index];
         const site = resultElement.getElementsByTagName("a")[0].href;
@@ -84,7 +87,7 @@ async function extractResults(page) {
           results.push(site);
         }
       }
-      // const link = doc.getElementsByTagName('span')[2].innerText
+
       //Sugestões de palavras
       const relatedSearchsElements = document.getElementsByClassName("k8XOCe");
       let relatedSearchs = [];
