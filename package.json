@@ -19,11 +19,10 @@
   "homepage": "https://github.com/danielgoqueiroz/mercato#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "jest": "^27.0.1",
     "nodemon": "^2.0.7",
     "puppeteer": "^9.1.1",
     "puppeteer-core": "^9.1.1"
   },
-  "devDependencies": {
-    "jest": "^26.6.3"
-  }
+  "devDependencies": {}
 }

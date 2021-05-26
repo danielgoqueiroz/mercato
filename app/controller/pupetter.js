@@ -8,12 +8,13 @@ const SEARCH_SELECTOR =
 const width = 1024;
 const height = 2000;
 
+// Search terms
 async function search(terms) {
   let results = [];
 
   for (let index = 0; index < terms.length; index++) {
     const term = terms[index];
-    console.log(`Iniciando ${term}`);
+    console.log(`Procurando termo: ${term}`);
     const result = await searchByTerm(term);
     results.push(result);
   }
@@ -21,6 +22,57 @@ async function search(terms) {
   return results;
 }
 
+//Search
+async function searchByTerm(term) {
+  const headless = false;
+
+  const browser = await puppeteer.launch({
+    headless: headless,
+    args: [`--window-size=${width},${height}`],
+    defaultViewport: {
+      width,
+      height,
+    },
+  });
+
+  const page = await doInitialSearch(browser, term);
+
+  let pageCount = 0;
+
+  const resultExtracted = await extractResults(page);
+
+  const result = {};
+  result.searchTerm = term;
+  result.dateSeach = new Date();
+  result.relatedSearchs = resultExtracted.relatedSearchs;
+  result.results = [];
+  result.results.push({ page: pageCount, results: resultExtracted.results });
+
+  const hasNext = await page.evaluate((sel) => {
+    const el = document.getElementById(sel);
+    return el !== null;
+  }, "pnnext");
+
+  if (hasNext) {
+    await page.click("#pnnext");
+    await page.waitForNavigation();
+    await extractResults(page);
+  }
+
+  if (headless) {
+    console.log("Salvando PDF");
+    await page.pdf({
+      path: `resources/${term}_${pageCount}.pdf`,
+      format: "a4",
+    });
+  }
+
+  console.log(result);
+  await browser.close();
+  return result;
+}
+
+//Contruct intial search
 async function doInitialSearch(browser, term) {
   const page = await browser.newPage();
   await page.goto("https://www.google.com/");
@@ -30,46 +82,7 @@ async function doInitialSearch(browser, term) {
   return page;
 }
 
-async function searchByTerm(term) {
-  const headless = true
-  const browser = await puppeteer.launch({
-    headless: headless,
-    args: [`--window-size=${width},${height}`],
-    defaultViewport: {
-      width,
-      height,
-    },
-  });
-  
-  const page = await doInitialSearch(browser, term);
-  
-  let pageCount = 1;
-  const result = await extractResults(page);
-  result.searchTerm = term;
-  result.dateSeach = new Date();
-  result.page = pageCount;
-
-  if(headless) {
-    await page.pdf({ path: `resources/${term}_${pageCount}.pdf`, format: "a4" });
-  }
-
-  // const hasNext = await page.evaluate((sel) => {
-  //   const el = document.getElementById(sel);
-  //   return el !== null;
-  // }, "pnnext");
-  // if (hasNext) {
-  //   await page.click("#pnnext");
-  //   await page.waitForNavigation();
-  // }
-
-  // while (hasNextPage) {
-  //   await extractResults(page);
-  //   hasNextPage = await hasNext(page);
-  // }
-  await browser.close();
-    return result;
-}
-
+//Extract page contents
 async function extractResults(page) {
   const result = await page
     .evaluate(() => {
