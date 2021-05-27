@@ -22,6 +22,14 @@ async function search(terms) {
   return results;
 }
 
+async function hasNext(page) {
+  const hasNext = await page.evaluate((sel) => {
+    const el = document.getElementById(sel);
+    return el !== null;
+  }, "pnnext");
+  return hasNext;
+}
+
 //Search
 async function searchByTerm(term) {
   const headless = false;
@@ -47,16 +55,19 @@ async function searchByTerm(term) {
   result.relatedSearchs = resultExtracted.relatedSearchs;
   result.results = [];
   result.results.push({ page: pageCount, results: resultExtracted.results });
+  
+  let hasNextPage = await hasNext(page)
 
-  const hasNext = await page.evaluate((sel) => {
-    const el = document.getElementById(sel);
-    return el !== null;
-  }, "pnnext");
+  let results = [result]
 
-  if (hasNext) {
+
+  while (hasNextPage) {
     await page.click("#pnnext");
     await page.waitForNavigation();
-    await extractResults(page);
+    let result = {}
+    result = await extractResults(page);
+    results.push(result)
+    hasNextPage = hasNext(page)
   }
 
   if (headless) {
