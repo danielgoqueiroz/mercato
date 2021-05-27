@@ -1,7 +1,12 @@
 const puppeteer = require("../app/controller/pupetter");
+var expect = require("expect.js");
 
-test("Realiza requisição", async () => {
-  const result = await puppeteer.searchByTerm("manutenção preditiva");
-  expect(result.relatedSearchs).not.toBeNull();
-  expect(result.results).not.toBeNull();
-},60000);
+describe("Busca", function () {
+  this.timeout(5000);
+
+  it("Deve buscar resultados para busca por termos", async function () {
+    const result = await puppeteer.searchByTerm("manutenção preditiva");
+    expect(result.relatedSearchs).to.be.an("array");
+    expect(result.results).to.be.an("array");
+  });
+});
