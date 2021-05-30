@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const TAG_AD = "uEierd";
 const TAG_RESULT = "g";
+const PAGE_COUNT_LIMIT = 3;
 
 const SEARCH_SELECTOR =
   "body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input";
@@ -22,71 +23,67 @@ async function search(terms) {
   return results;
 }
 
-async function hasNext(page) {
-  const hasNext = await page.evaluate(() => {
-    const hasNext = document.getElementById("pnnext");
-    return hasNext;
-  });
-  return hasNext;
-}
-
 //Search
 async function searchByTerm(term) {
   const headless = false;
 
   const browser = await puppeteer.launch({
     headless: headless,
-    args: [`--window-size=${width},${height}`],
-    defaultViewport: {
-      width,
-      height,
-    },
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    // args: [`--window-size=${width},${height}`],
+    // defaultViewport: {
+    //   width,
+    //   height,
+    // },
   });
 
   const page = await doInitialSearch(browser, term);
 
-  const r = await page.evaluate(() => {
-    const next = document.getElementsByClassName("d6cvqb").innerText;
-    const next2 = document.getElementsByClassName("rISBZc");
+  let pageCount = 1;
 
-    return { 1: next, 2: next2 };
-  });
+  let results = [];
 
-  let pageCount = 0;
+  let resultExtracted = await extractResults(page, pageCount);
+  results.push(resultExtracted);
 
-  const resultExtracted = await extractResults(page);
-
-  const result = {};
-  result.searchTerm = term;
-  result.dateSeach = new Date();
-  result.relatedSearchs = resultExtracted.relatedSearchs;
-  result.results = [];
-  result.results.push({ page: pageCount, results: resultExtracted.results });
-
-  let hasNextPage = await hasNext(page);
-
-  let results = [result];
-
-  while (hasNextPage) {
+  while (resultExtracted.hasNextPage && pageCount < PAGE_COUNT_LIMIT) {
+    pageCount++;
     await page.click("#pnnext");
     await page.waitForNavigation();
-    let result = {};
-    result = await extractResults(page);
-    results.push(result);
-    hasNextPage = hasNext(page);
+    const newResult = await extractResults(page, pageCount);
+    results.push(newResult);
+    resultExtracted = newResult;
   }
 
-  if (headless) {
-    console.log("Salvando PDF");
-    await page.pdf({
-      path: `resources/${term}_${pageCount}.pdf`,
-      format: "a4",
-    });
-  }
+  // let report = {
+  //   searchTerm = term,
+  //   result = results,
+  //   date = new Date()
+  // }
+  // console.info(report)
 
-  console.log(result);
+  // let results = [result];
+
+  // while (hasNextPage) {
+  //   await page.click("#pnnext");
+  //   await page.waitForNavigation();
+  //   let result = {};
+  //   result = await extractResults(page);
+  //   results.push(result);
+  //   hasNextPage = hasNext(page);
+  // }
+
+  // if (headless) {
+  //   console.log("Salvando PDF");
+  //   await page.pdf({
+  //     path: `resources/${term}_${pageCount}.pdf`,
+  //     format: "a4",
+  //   });
+  // }
+
+  console.log(results);
   await browser.close();
-  return result;
+  return results;
 }
 
 //Contruct intial search
@@ -95,12 +92,12 @@ async function doInitialSearch(browser, term) {
   await page.goto("https://www.google.com/");
   await page.type(SEARCH_SELECTOR, term);
   await page.type(SEARCH_SELECTOR, String.fromCharCode(13));
-  await page.waitForSelector("#rso");
+  await page.waitForNavigation();
   return page;
 }
 
 //Extract page contents
-async function extractResults(page) {
+async function extractResults(page, pageCount) {
   const result = await page
     .evaluate(() => {
       const doc = document.getElementsByClassName("g");
@@ -117,6 +114,17 @@ async function extractResults(page) {
           results.push(site);
         }
       }
+      const next = document.getElementById("pnnext") !== null;
+
+      //Poaple elso ask for
+      const relatedQuestionsElements = document.getElementsByClassName(
+        "related-question-pair"
+      );
+      let relatedQuestions = [];
+      for (let index = 0; index < relatedQuestionsElements.length; index++) {
+        const relatedQuestion = relatedQuestionsElements[index];
+        relatedQuestions.push(relatedQuestion.innerText);
+      }
 
       //Sugestões de palavras
       const relatedSearchsElements = document.getElementsByClassName("k8XOCe");
@@ -126,16 +134,28 @@ async function extractResults(page) {
         relatedSearchs.push(relatedSearch.innerText);
       }
 
+      //Resultados de propagandas
+      const advidorsElements = document.getElementsByClassName("uEierd");
+      let advisors = [];
+      for (let index = 0; index < advidorsElements.length; index++) {
+        const advisor = advidorsElements[index];
+        advisors.push(advisor.innerText);
+      }
+
       const res = {
         results: results,
         relatedSearchs: relatedSearchs,
+        relatedQuestions: relatedQuestions,
+        advisors: advisors,
+        hasNextPage: next,
       };
       return res;
     })
     .catch((err) => {
       console.log(err);
-      return;
+      return [];
     });
+  result.page = pageCount;
   return result;
 }
 
