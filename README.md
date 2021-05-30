@@ -3,9 +3,12 @@
 Acompanhamento de concorrentes
 
 - Dado uma lista de termos, retornar:
-- - quais empresas aparecem para cada termo na primeira página do google
-- - Qual posição está a empresa do cliente (faz a busca paginada em informa a posição)
-- - Informa os termos sugeridos/pesquisas relacionadas (tag html #botstuff) 
+- - Quais empresas aparecem nas páginas de pesquisa do Google dado um termo de pesquisa, Limite 30 páginas
+- - - Limitação de páginas nas pesquisans
+- - - Foltro de geolocalização
+- - Dado um site, informa se ele aparece no resultado
+- - Dado um site, qual posição ele aparece no resultado
+- - Informa os termos sugeridos/pesquisas relacionadas (tag html #botstuff)
 - informar quando o resultado for de propaganda
 - Realizar a pesquisa utilizando proxy pu vpn por localização
 - Salvar resultados
@@ -17,12 +20,12 @@ Acompanhamento de concorrentes
   - redes sociais
   - tamanho de site
 
+# Puppeteer
 
+Doc - https://pptr.dev/
 
-# Puppeteer usage
+Tutorial - https://www.codota.com/code/javascript/functions/puppeteer/Page/click
 
-https://www.codota.com/code/javascript/functions/puppeteer/Page/click
+# Mocha
 
-# jest 
-
-https://jestjs.io/pt-BR/docs/using-matchers
+Doc - https://mochajs.org/
