@@ -55,24 +55,6 @@ async function searchByTerm(term) {
     resultExtracted = newResult;
   }
 
-  // let report = {
-  //   searchTerm = term,
-  //   result = results,
-  //   date = new Date()
-  // }
-  // console.info(report)
-
-  // let results = [result];
-
-  // while (hasNextPage) {
-  //   await page.click("#pnnext");
-  //   await page.waitForNavigation();
-  //   let result = {};
-  //   result = await extractResults(page);
-  //   results.push(result);
-  //   hasNextPage = hasNext(page);
-  // }
-
   // if (headless) {
   //   console.log("Salvando PDF");
   //   await page.pdf({
@@ -81,7 +63,6 @@ async function searchByTerm(term) {
   //   });
   // }
 
-  console.log(results);
   await browser.close();
   return results;
 }

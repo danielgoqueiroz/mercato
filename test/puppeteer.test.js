@@ -2,14 +2,20 @@ const puppeteer = require("../app/controller/pupetter");
 var expect = require("expect.js");
 
 describe("Busca", function (done) {
-  this.timeout(5000);
+  this.timeout(30000);
 
   it("Deve buscar resultados para busca por termos", async function () {
-    const result = await puppeteer.searchByTerm("manutenção preditiva");
+    const reports = await puppeteer.searchByTerm("manutenção preditiva");
 
-    expect(result.relatedSearchs).to.be.an("array");
-    expect(result.results).to.be.an("array");
+    expect(reports).to.be.an("array");
 
-    done();
+    reports.forEach((report) => {
+      expect(report.results).to.be.an("array");
+      expect(report.relatedSearchs).to.be.an("array");
+      expect(report.relatedQuestions).to.be.an("array");
+      expect(report.advisors).to.be.an("array");
+    });
+
+    done;
   });
 });
