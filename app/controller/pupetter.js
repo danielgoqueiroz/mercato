@@ -2,33 +2,45 @@ const puppeteer = require("puppeteer");
 const TAG_AD = "uEierd";
 const TAG_RESULT = "g";
 const PAGE_COUNT_LIMIT = 3;
+const HEADLESS = true;
 
 const SEARCH_SELECTOR =
   "body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input";
 
-const width = 1024;
-const height = 2000;
+/**
+ *
+ * @param {*} terms Lista de termos de pesquisa
+ * @param {*} pages Quantidade de páginas que são feotas a pesquisa. Limite máximo são 30 páginas.
+ * @returns
+ */
+async function searchByTerms(terms, pages) {
+  if (pages === undefined || pages === null || pages < 0) {
+    pages = 1;
+  }
+  if (pages == 0) {
+    pages = 30;
+  }
 
-// Search terms
-async function search(terms) {
   let results = [];
 
   for (let index = 0; index < terms.length; index++) {
     const term = terms[index];
     console.log(`Procurando termo: ${term}`);
-    const result = await searchByTerm(term);
+    const result = await searchByTerm(term, pages);
     results.push(result);
   }
 
   return results;
 }
 
-//Search
-async function searchByTerm(term) {
-  const headless = false;
-
+/**
+ * @param {*} term Termo de pesquia
+ * @param {*} pagesCountLimit Quantidade de páginas que são feotas a pesquisa
+ * @returns
+ */
+async function searchByTerm(term, pagesCountLimit) {
   const browser = await puppeteer.launch({
-    headless: headless,
+    headless: HEADLESS,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
     // args: [`--window-size=${width},${height}`],
     // defaultViewport: {
@@ -44,27 +56,45 @@ async function searchByTerm(term) {
   let results = [];
 
   let resultExtracted = await extractResults(page, pageCount);
+
+  savePdf(page, term, pagecount)
+
+  if (HEADLESS) {
+    console.log("Salvando PDF");
+    await page.pdf({
+      path: `resources/${term}_${pageCount}.pdf`,
+      format: "a4",
+    });
+  }
+
   results.push(resultExtracted);
 
-  while (resultExtracted.hasNextPage && pageCount < PAGE_COUNT_LIMIT) {
+  while (resultExtracted.hasNextPage && pageCount < pagesCountLimit) {
     pageCount++;
     await page.click("#pnnext");
     await page.waitForNavigation();
     const newResult = await extractResults(page, pageCount);
     results.push(newResult);
     resultExtracted = newResult;
-  }
 
-  // if (headless) {
-  //   console.log("Salvando PDF");
-  //   await page.pdf({
-  //     path: `resources/${term}_${pageCount}.pdf`,
-  //     format: "a4",
-  //   });
-  // }
+    if (HEADLESS) {
+      console.log("Salvando PDF");
+      await page.pdf({
+        path: `resources/${term}_${pageCount}.pdf`,
+        format: "a4",
+      });
+    }
+  }
 
   await browser.close();
   return results;
+}
+
+savePdf(page, term, page) {
+  await page.pdf({
+      path: `resources/pdf/${term}_${pageCount}.pdf`,
+      format: "a4",
+    });
 }
 
 //Contruct intial search
@@ -136,12 +166,14 @@ async function extractResults(page, pageCount) {
       console.log(err);
       return [];
     });
+
   result.page = pageCount;
+
   return result;
 }
 
 module.exports = {
-  search,
+  searchByTerms,
   searchByTerm,
   extractResults,
 };
