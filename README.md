@@ -9,7 +9,7 @@ Acompanhamento de concorrentes
 - - Lista de resultados de propagandas
 
 - Salvar resultados
-- - Jsons Locais com nome yyyy-MM-dd_termo_hash-content.json
+- - Jsons Locais com nome yyyy-MM-dd_termo.json
 - - Bando de dados Mongo
 
 - Filtro

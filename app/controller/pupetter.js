@@ -1,4 +1,7 @@
 const puppeteer = require("puppeteer");
+const fs = require("fs");
+const path = require("path");
+
 const TAG_AD = "uEierd";
 const TAG_RESULT = "g";
 const PAGE_COUNT_LIMIT = 3;
@@ -29,6 +32,17 @@ async function searchByTerms(terms, pages) {
     const result = await searchByTerm(term, pages);
     results.push(result);
   }
+  const date = new Date();
+  const dateFormated =
+    data.getFullYear() + "-" + (data.getMonth() + 1) + "-" + data.getDate();
+  const jsonPath = path.resolve(`resources/json/${dateFormated}_${term}.json`);
+
+  await fs.writeFile(jsonPath, results, function (err) {
+    if (err) {
+      console.error(err);
+    }
+    console.info(`Resultados salvos em ${jsonPath}`);
+  });
 
   return results;
 }
@@ -57,12 +71,14 @@ async function searchByTerm(term, pagesCountLimit) {
 
   let resultExtracted = await extractResults(page, pageCount);
 
-  savePdf(page, term, pagecount)
+  console.log(pageCount);
+
+  await savePdf(page, term, pageCount);
 
   if (HEADLESS) {
     console.log("Salvando PDF");
     await page.pdf({
-      path: `resources/${term}_${pageCount}.pdf`,
+      path: `resources/pdf/${term}_${pageCount}.pdf`,
       format: "a4",
     });
   }
@@ -77,24 +93,18 @@ async function searchByTerm(term, pagesCountLimit) {
     results.push(newResult);
     resultExtracted = newResult;
 
-    if (HEADLESS) {
-      console.log("Salvando PDF");
-      await page.pdf({
-        path: `resources/${term}_${pageCount}.pdf`,
-        format: "a4",
-      });
-    }
+    await savePdf(page, term, pageCount);
   }
 
   await browser.close();
   return results;
 }
 
-savePdf(page, term, page) {
+async function savePdf(page, term, pageCount) {
   await page.pdf({
-      path: `resources/pdf/${term}_${pageCount}.pdf`,
-      format: "a4",
-    });
+    path: `resources/pdf/${term}_${pageCount}.pdf`,
+    format: "a4",
+  });
 }
 
 //Contruct intial search
