@@ -26,23 +26,26 @@ async function searchByTerms(terms, pages) {
 
   let results = [];
 
+  // Busca por termos
   for (let index = 0; index < terms.length; index++) {
     const term = terms[index];
     console.log(`Procurando termo: ${term}`);
     const result = await searchByTerm(term, pages);
     results.push(result);
-  }
-  const date = new Date();
-  const dateFormated =
-    data.getFullYear() + "-" + (data.getMonth() + 1) + "-" + data.getDate();
-  const jsonPath = path.resolve(`resources/json/${dateFormated}_${term}.json`);
 
-  await fs.writeFile(jsonPath, results, function (err) {
-    if (err) {
-      console.error(err);
-    }
-    console.info(`Resultados salvos em ${jsonPath}`);
-  });
+    const date = new Date();
+    const dateFormated =
+      date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+    const jsonPath = path.resolve(
+      `resources/json/${dateFormated}_${term}.json`
+    );
+    fs.writeFileSync(jsonPath, JSON.stringify(result), function (err) {
+      if (err) {
+        console.error(err);
+      }
+      console.info(`Resultados salvos em ${jsonPath}`);
+    });
+  }
 
   return results;
 }
@@ -56,11 +59,6 @@ async function searchByTerm(term, pagesCountLimit) {
   const browser = await puppeteer.launch({
     headless: HEADLESS,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    // args: [`--window-size=${width},${height}`],
-    // defaultViewport: {
-    //   width,
-    //   height,
-    // },
   });
 
   const page = await doInitialSearch(browser, term);
@@ -77,10 +75,14 @@ async function searchByTerm(term, pagesCountLimit) {
 
   if (HEADLESS) {
     console.log("Salvando PDF");
-    await page.pdf({
-      path: `resources/pdf/${term}_${pageCount}.pdf`,
-      format: "a4",
-    });
+    const pdfPath = `resources/pdf/${term}_${pageCount}.pdf`;
+
+    if (!fs.existsSync(pdfPath)) {
+      await page.pdf({
+        path: pdfPath,
+        format: "a4",
+      });
+    }
   }
 
   results.push(resultExtracted);

@@ -40,6 +40,6 @@ describe("Busca termos", function (done) {
       });
     });
 
-    done;
+    done();
   });
 });
