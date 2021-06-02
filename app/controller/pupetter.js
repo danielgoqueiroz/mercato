@@ -7,14 +7,18 @@ const TAG_RESULT = "g";
 const PAGE_COUNT_LIMIT = 3;
 const HEADLESS = true;
 
+const CLASS_RELATED_SEARCH = "k8XOCe";
+const CLASS_ADVISORS = "uEierd";
+
 const SEARCH_SELECTOR =
   "body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input";
 
 let Report = require("../model/Report");
-let Result = require("../model/Result");
+const Result = require("../model/Result");
 let Page = require("../model/Page");
 
 const { throws } = require("assert");
+const { REPL_MODE_STRICT } = require("repl");
 
 /**
  *
@@ -67,45 +71,46 @@ async function searchByTerm(term, target, pageLimit) {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
-  const page = await doInitialSearch(browser, term);
+  const pageDOM = await doInitialSearch(browser, term);
 
   let pageCount = 1;
 
   let report = new Report(term, target, pageLimit);
 
-  let resultExtracted = await extractResults(page, report, pageCount);
+  await extractResults(pageDOM, report, pageCount);
 
-  console.log(pageCount);
-
-  await savePdf(page, term, pageCount);
+  await savePdf(pageDOM, term, pageCount);
 
   if (HEADLESS) {
     console.log("Salvando PDF");
     const pdfPath = `resources/pdf/${term}_${pageCount}.pdf`;
 
     if (!fs.existsSync(pdfPath)) {
-      await page.pdf({
+      await pageDOM.pdf({
         path: pdfPath,
         format: "a4",
       });
     }
   }
 
-  results.results.push(resultExtracted);
+  //Possui próxima página
+  let hasNextButton = await pageDOM.evaluate(() => {
+    return document.getElementById("pnnext") !== null;
+  });
 
-  while (resultExtracted.hasNextPage && pageCount < pageLimit) {
+  while (hasNextButton && pageCount < pageLimit) {
     pageCount++;
-    await page.click("#pnnext");
-    await page.waitForNavigation();
-    const newResult = await extractResults(page, pageCount);
-    results.results.push(newResult);
-    resultExtracted = newResult;
-
-    await savePdf(page, term, pageCount);
+    await pageDOM.click("#pnnext");
+    await pageDOM.waitForNavigation();
+    await extractResults(pageDOM, report, pageCount);
+    await savePdf(pageDOM, term, pageCount);
+    hasNextButton = await pageDOM.evaluate(() => {
+      return document.getElementById("pnnext") !== null;
+    });
   }
 
   await browser.close();
-  return results;
+  return report;
 }
 
 /**
@@ -137,86 +142,87 @@ async function doInitialSearch(browser, term) {
   return page;
 }
 
-const CLASS_RELATED_SEARCH = "k8XOCe";
-const CLASS_ADVISORS = "uEierd";
 /**
  *
- * @param {*} page
+ * @param {*} pageDOM
  * @param {*} pageCount
- * @returns
+ * @returns Página extraída
  */
 //Extract page contents
-async function extractResults(page, report, pageCount) {
-  //Extract contents
-  const result = await page
-    .evaluate(() => {
-      const next = document.getElementById("pnnext") !== null;
-      const doc = document.getElementsByClassName("g");
-      if (doc === undefined) {
-        new throws(
-          'Não foi identificado a tag "g", referente aos registros de pesquisa.'
-        );
-      }
-      let page = new Page(pageCount);
-      //Extrai results
-      for (let index = 0; index < doc.length; index++) {
-        const resultElement = doc[index];
+async function extractResults(pageDOM, report, pageCount) {
+  //Página
+  let page = new Page(pageCount);
 
-        const link = resultElement.getElementsByTagName("a")[0].href;
-        const title = resultElement.getElementsByTagName("h3")[0].innerText;
-        const description =
-          resultElement.getElementsByClassName("IsZvec")[0].innerText;
-        const isAd = false;
-
-        const result = new Result(link, title, description, isAd);
-        page.addResult(result);
-      }
-      report.addPage(page);
-
-      //Poaple elso ask for
-      const rQuestionsEl = document.getElementsByClassName(
-        "related-question-pair"
-      );
-      let relatedQuestions = [];
-      for (let i = 0; i < rQuestionsEl.length; i++) {
-        const relatedQuestion = rQuestionsEl[i].innerText;
-        report.addRelatedQuestion(relatedQuestion);
-      }
-
-      //Sugestões de palavras
-      const rSearchsEl = document.getElementsByClassName(CLASS_RELATED_SEARCH);
-      let relatedSearchs = [];
-      for (let i = 0; i < rSearchsEl.length; i++) {
-        const relatedSearch = rSearchsEl[i].innerText;
-        report.addRelatedSearch(relatedSearch);
-      }
-
-      //Resultados de propagandas
-      const advidorsElements = document.getElementsByClassName(CLASS_ADVISORS);
-      let advisors = [];
-
-      for (let i = 0; i < advidorsElements.length; i++) {
-        const advisor = advidorsElements[i];
-        advisors.push(advisor.innerText);
-      }
-
-      const res = {
-        results: results,
-        relatedSearchs: relatedSearchs,
-        relatedQuestions: relatedQuestions,
-        advisors: advisors,
-        hasNextPage: next,
+  //Resultados
+  let result = await pageDOM.evaluate(() => {
+    let results = [];
+    const resultElements = document.getElementsByClassName("g");
+    for (let i = 0; i < resultElements.length; i++) {
+      const resultElement = resultElements[i];
+      const link = resultElement.getElementsByTagName("a")[0].href;
+      const title = resultElement.getElementsByTagName("h3")[0].innerText;
+      const description =
+        resultElement.getElementsByClassName("IsZvec")[0].innerText;
+      const isAd = false;
+      const result = {
+        link: link,
+        title: title,
+        description: description,
+        isAd: isAd,
       };
-      return res;
-    })
-    .catch((err) => {
-      console.log(err);
-      return [];
-    });
+      results.push(result);
+    }
+    return results;
+  });
+  result = result.map(function (res) {
+    return new Result(res.link, res.title, res.description, res.isAd);
+  });
 
-  result.page = pageCount;
+  page.addResult(result);
+  report.addPage(page);
 
-  return result;
+  //Extrai poaple elso ask for
+  const questions = await pageDOM.evaluate(() => {
+    let itens = [];
+    const rQuestionsEl = document.getElementsByClassName(
+      "related-question-pair"
+    );
+    for (let i = 0; i < rQuestionsEl.length; i++) {
+      itens.push(rQuestionsEl[i].innerText);
+    }
+    return itens;
+  });
+  questions.forEach((element) => {
+    report.addRelatedQuestion(element);
+  });
+
+  const searchs = await pageDOM.evaluate((sel) => {
+    //Sugestões de palavras
+    let itens = [];
+    const rSearchsEl = document.getElementsByClassName(sel);
+    for (let i = 0; i < rSearchsEl.length; i++) {
+      itens.push(rSearchsEl[i].innerText);
+    }
+    return itens;
+  }, CLASS_RELATED_SEARCH);
+  searchs.forEach((element) => {
+    report.addRelatedSearch(element);
+  });
+
+  const advisors = await pageDOM.evaluate((sel) => {
+    //Resultados de propagandas
+    let itens = [];
+    const advidorsElements = document.getElementsByClassName(sel);
+    for (let i = 0; i < advidorsElements.length; i++) {
+      itens.push(advidorsElements[i].innerText);
+    }
+    return itens;
+  }, CLASS_ADVISORS);
+  advisors.forEach((element) => {
+    report.addAdvisors(element);
+  });
+
+  return page;
 }
 
 module.exports = {

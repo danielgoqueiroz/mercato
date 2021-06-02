@@ -7,11 +7,11 @@ class Report {
     this.relatedQuestions = [];
     this.ralatedSearch = [];
     this.advisors = [];
-    this.page = [];
+    this.pages = [];
   }
 
-  addPage(result) {
-    this.results.push(result);
+  addPage(page) {
+    this.pages.push(page);
   }
   addRelatedQuestion(question) {
     this.relatedQuestions.push(question);
@@ -19,8 +19,8 @@ class Report {
   addRelatedSearch(search) {
     this.ralatedSearch.push(search);
   }
-  addAdvisors(ad) {
-    this.advisors.push(ad);
+  addAdvisors(ads) {
+    this.advisors.push(ads);
   }
 }
 

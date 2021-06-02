@@ -8,4 +8,4 @@ class Page {
   }
 }
 
-module.exports = Result;
+module.exports = Page;

@@ -1,4 +1,4 @@
-class Link {
+class Result {
   constructor(link, title, description, isAd) {
     this.link = link;
     this.title = title;
@@ -7,4 +7,4 @@ class Link {
   }
 }
 
-module.exports = Link;
+module.exports = Result;
