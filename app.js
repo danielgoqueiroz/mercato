@@ -8,12 +8,14 @@ app.use(
   })
 );
 
-const puppeteer = require("./app/controller/pupetter");
+const puppeteerController = require("./app/controller/pupetter");
 
+// Test Api
 app.get("/", function (req, res) {
   res.send("Test Get");
 });
 
+// Do search
 app.post("/search", async function (req, res) {
   const terms = req.body.terms;
   if (terms === undefined || terms === null || terms.length < 1) {
@@ -22,11 +24,12 @@ app.post("/search", async function (req, res) {
       .send({ message: `Valor de termos inválido: ${terms}` });
   }
 
-  await puppeteer.search(terms);
+  await puppeteerController.search(terms);
   console.log("End");
   res.send("Test Get");
 });
 
+// Init Server
 app.listen(3000, function () {
   console.log("Mercato iniciado.");
 });

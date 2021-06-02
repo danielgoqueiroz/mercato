@@ -10,6 +10,12 @@ const HEADLESS = true;
 const SEARCH_SELECTOR =
   "body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input";
 
+let Report = require("../model/Report");
+let Result = require("../model/Result");
+let Page = require("../model/Page");
+
+const { throws } = require("assert");
+
 /**
  *
  * @param {*} terms Lista de termos de pesquisa
@@ -27,8 +33,8 @@ async function searchByTerms(terms, pages) {
   let results = [];
 
   // Busca por termos
-  for (let index = 0; index < terms.length; index++) {
-    const term = terms[index];
+  for (let i = 0; i < terms.length; i++) {
+    const term = terms[i];
     console.log(`Procurando termo: ${term}`);
     const result = await searchByTerm(term, pages);
     results.push(result);
@@ -52,10 +58,10 @@ async function searchByTerms(terms, pages) {
 
 /**
  * @param {*} term Termo de pesquia
- * @param {*} pagesCountLimit Quantidade de páginas que são feotas a pesquisa
+ * @param {*} pageLimit Quantidade de páginas que são feotas a pesquisa
  * @returns
  */
-async function searchByTerm(term, pagesCountLimit) {
+async function searchByTerm(term, target, pageLimit) {
   const browser = await puppeteer.launch({
     headless: HEADLESS,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -65,9 +71,9 @@ async function searchByTerm(term, pagesCountLimit) {
 
   let pageCount = 1;
 
-  let results = [];
+  let report = new Report(term, target, pageLimit);
 
-  let resultExtracted = await extractResults(page, pageCount);
+  let resultExtracted = await extractResults(page, report, pageCount);
 
   console.log(pageCount);
 
@@ -85,14 +91,14 @@ async function searchByTerm(term, pagesCountLimit) {
     }
   }
 
-  results.push(resultExtracted);
+  results.results.push(resultExtracted);
 
-  while (resultExtracted.hasNextPage && pageCount < pagesCountLimit) {
+  while (resultExtracted.hasNextPage && pageCount < pageLimit) {
     pageCount++;
     await page.click("#pnnext");
     await page.waitForNavigation();
     const newResult = await extractResults(page, pageCount);
-    results.push(newResult);
+    results.results.push(newResult);
     resultExtracted = newResult;
 
     await savePdf(page, term, pageCount);
@@ -102,6 +108,12 @@ async function searchByTerm(term, pagesCountLimit) {
   return results;
 }
 
+/**
+ *
+ * @param {*} page
+ * @param {*} term
+ * @param {*} pageCount
+ */
 async function savePdf(page, term, pageCount) {
   await page.pdf({
     path: `resources/pdf/${term}_${pageCount}.pdf`,
@@ -109,6 +121,12 @@ async function savePdf(page, term, pageCount) {
   });
 }
 
+/**
+ *
+ * @param {*} browser
+ * @param {*} term
+ * @returns
+ */
 //Contruct intial search
 async function doInitialSearch(browser, term) {
   const page = await browser.newPage();
@@ -119,49 +137,66 @@ async function doInitialSearch(browser, term) {
   return page;
 }
 
+const CLASS_RELATED_SEARCH = "k8XOCe";
+const CLASS_ADVISORS = "uEierd";
+/**
+ *
+ * @param {*} page
+ * @param {*} pageCount
+ * @returns
+ */
 //Extract page contents
-async function extractResults(page, pageCount) {
+async function extractResults(page, report, pageCount) {
+  //Extract contents
   const result = await page
     .evaluate(() => {
+      const next = document.getElementById("pnnext") !== null;
       const doc = document.getElementsByClassName("g");
       if (doc === undefined) {
-        return;
+        new throws(
+          'Não foi identificado a tag "g", referente aos registros de pesquisa.'
+        );
       }
-      let results = [];
-
-      //Itera nos resultados
+      let page = new Page(pageCount);
+      //Extrai results
       for (let index = 0; index < doc.length; index++) {
         const resultElement = doc[index];
-        const site = resultElement.getElementsByTagName("a")[0].href;
-        if (site != "") {
-          results.push(site);
-        }
+
+        const link = resultElement.getElementsByTagName("a")[0].href;
+        const title = resultElement.getElementsByTagName("h3")[0].innerText;
+        const description =
+          resultElement.getElementsByClassName("IsZvec")[0].innerText;
+        const isAd = false;
+
+        const result = new Result(link, title, description, isAd);
+        page.addResult(result);
       }
-      const next = document.getElementById("pnnext") !== null;
+      report.addPage(page);
 
       //Poaple elso ask for
-      const relatedQuestionsElements = document.getElementsByClassName(
+      const rQuestionsEl = document.getElementsByClassName(
         "related-question-pair"
       );
       let relatedQuestions = [];
-      for (let index = 0; index < relatedQuestionsElements.length; index++) {
-        const relatedQuestion = relatedQuestionsElements[index];
-        relatedQuestions.push(relatedQuestion.innerText);
+      for (let i = 0; i < rQuestionsEl.length; i++) {
+        const relatedQuestion = rQuestionsEl[i].innerText;
+        report.addRelatedQuestion(relatedQuestion);
       }
 
       //Sugestões de palavras
-      const relatedSearchsElements = document.getElementsByClassName("k8XOCe");
+      const rSearchsEl = document.getElementsByClassName(CLASS_RELATED_SEARCH);
       let relatedSearchs = [];
-      for (let index = 0; index < relatedSearchsElements.length; index++) {
-        const relatedSearch = relatedSearchsElements[index];
-        relatedSearchs.push(relatedSearch.innerText);
+      for (let i = 0; i < rSearchsEl.length; i++) {
+        const relatedSearch = rSearchsEl[i].innerText;
+        report.addRelatedSearch(relatedSearch);
       }
 
       //Resultados de propagandas
-      const advidorsElements = document.getElementsByClassName("uEierd");
+      const advidorsElements = document.getElementsByClassName(CLASS_ADVISORS);
       let advisors = [];
-      for (let index = 0; index < advidorsElements.length; index++) {
-        const advisor = advidorsElements[index];
+
+      for (let i = 0; i < advidorsElements.length; i++) {
+        const advisor = advidorsElements[i];
         advisors.push(advisor.innerText);
       }
 

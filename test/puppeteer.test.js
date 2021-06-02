@@ -5,17 +5,33 @@ describe("Busca por termo", function (done) {
   this.timeout(30000);
 
   it("Deve buscar resultados quando informado um termo", async function () {
-    const reports = await puppeteer.searchByTerm("manutenção preditiva");
+    const report = await puppeteer.searchByTerm(
+      "manutenção preditiva",
+      "dynamox",
+      3
+    );
 
-    expect(reports).to.be.an("array");
+    expect(report).to.be.an("object");
+    expect(report.term).to.be("string");
+    expect(report.target).to.be("string");
+    expect(report.pageLimit).to.be("number");
+    expect(report.date).to.be("date");
+    expect(report.relatedQuestions).to.be("array");
+    expect(report.raltedSearch).to.be("array");
+    expect(report.results).to.be("array");
 
-    reports.forEach((report) => {
-      expect(report.results).to.be.an("array");
-      expect(report.relatedSearchs).to.be.an("array");
-      expect(report.relatedQuestions).to.be.an("array");
-      expect(report.advisors).to.be.an("array");
+    report.results.forEach((result) => {
+      expect(result).to.be.an("object");
+      expect(res.isAd).to.be.an("boolean");
+      expect(res.links).to.be.an("array");
+
+      res.links.forEach((link) => {
+        expect(link).to.be.an("object");
+        expect(link.link).to.be.an("string");
+        expect(link.title).to.be.an("string");
+        expect(link.description).to.be.an("string");
+      });
     });
-
     done;
   });
 });

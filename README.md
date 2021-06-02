@@ -7,6 +7,31 @@ Acompanhamento de concorrentes
 - - - { Link, Título, Texto }
 - - Lista de termos de pesquisa 'pesquisas relacionadas'
 - - Lista de resultados de propagandas
+    Json:
+
+```
+report: {
+    term: string,
+    target: string,
+    pageLimit: integer,
+    date: date,
+    relatedQuestions: [ string ],
+    raltedSearch: [ string ],
+    results: [
+        {
+            page: int,
+            links: [
+                {
+                    link: string,
+                    isAd: boolean,
+                    title: string,
+                    description: string
+                }
+            ]
+        }
+    ]
+}
+```
 
 - Salvar resultados
 - - Jsons Locais com nome yyyy-MM-dd_termo.json
