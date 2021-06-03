@@ -4,8 +4,8 @@ class Report {
     this.target = target;
     this.pagelimit = pagelimit;
     this.date = new Date();
-    this.relatedQuestions = [];
-    this.ralatedSearch = [];
+    this.relatedQuestions = new Set();
+    this.ralatedSearch = new Set();
     this.advisors = [];
     this.pages = [];
   }
@@ -14,10 +14,10 @@ class Report {
     this.pages.push(page);
   }
   addRelatedQuestion(question) {
-    this.relatedQuestions.push(question);
+    this.relatedQuestions.add(question);
   }
   addRelatedSearch(search) {
-    this.ralatedSearch.push(search);
+    this.ralatedSearch.add(search);
   }
   addAdvisors(ads) {
     this.advisors.push(ads);

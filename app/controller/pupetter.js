@@ -26,7 +26,7 @@ const { REPL_MODE_STRICT } = require("repl");
  * @param {*} pages Quantidade de páginas que são feotas a pesquisa. Limite máximo são 30 páginas.
  * @returns
  */
-async function searchByTerms(terms, pages) {
+async function searchByTerms(terms, target, pages) {
   if (pages === undefined || pages === null || pages < 0) {
     pages = 1;
   }
@@ -34,13 +34,13 @@ async function searchByTerms(terms, pages) {
     pages = 30;
   }
 
-  let results = [];
+  let results = [{}];
 
   // Busca por termos
   for (let i = 0; i < terms.length; i++) {
     const term = terms[i];
     console.log(`Procurando termo: ${term}`);
-    const result = await searchByTerm(term, pages);
+    const result = await searchByTerm(term, target, pages);
     results.push(result);
 
     const date = new Date();
@@ -178,7 +178,7 @@ async function extractResults(pageDOM, report, pageCount) {
     return new Result(res.link, res.title, res.description, res.isAd);
   });
 
-  page.addResult(result);
+  page.results = result;
   report.addPage(page);
 
   //Extrai poaple elso ask for
