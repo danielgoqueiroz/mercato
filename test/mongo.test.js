@@ -1,9 +1,14 @@
-const Db = require("../app/db/mongo");
-var expect = require("expect.js");
+const expect = require("expect.js");
+const db = require("../app/db/mongo");
 
 describe("Database", function () {
-  this.timeout(30000);
-  it("Deve testart database", async function () {});
-  const databse = new Db();
-  database.test();
+  it("Deve testart database", async function (done) {
+    await db.test();
+    expect("teste").to.be.an("string");
+    // console.log("teste");
+    // const db = new Db();
+    // await db.test();
+    // console.log("Fim");
+    done();
+  });
 });

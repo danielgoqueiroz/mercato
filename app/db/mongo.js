@@ -1,24 +1,19 @@
-const { MongoClient } = require("mongodb");
+const MongoClient = require("mongodb").MongoClient;
+const url =
+  "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false";
 
-async function test(client) {
-  try {
-    await client.connect();
-    const databasesList = await client.db().admin().listDatabases();
+async function test() {
+  const client = await MongoClient.connect(url, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    console.log(err);
+  });
+  const databasesList = await client.db().admin().listDatabases();
+  const db = client.db("mercato");
+  const collections = await db.collections();
 
-    const db = client.db("mercato");
-    const collections = await db.collections();
-    console.log(collections);
-    console.log("Databases:");
-    databasesList.databases.forEach((db) => console.log(` - ${db.name}`));
-  } catch (e) {
-    console.error(e);
-  } finally {
-    await client.close();
-  }
+  // Establish and verify connection
+  await client.close();
 }
 
-const client = new MongoClient(
-  "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false"
-);
-
-test(client);
+module.exports = { test };
