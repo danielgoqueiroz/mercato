@@ -15,6 +15,9 @@ app.get("/", function (req, res) {
   res.send("Test Get");
 });
 
+// Get Config
+// Set Config (Post)
+
 // Do search
 app.post("/search", async function (req, res) {
   const terms = req.body.terms;
@@ -25,7 +28,6 @@ app.post("/search", async function (req, res) {
   }
 
   await puppeteerController.search(terms);
-  console.log("End");
   res.send("Test Get");
 });
 

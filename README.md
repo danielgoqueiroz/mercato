@@ -41,6 +41,28 @@ report: {
 - Dado uma lista de resultados:
 - - Informar resultados aplicando filtro em 'título', 'texto' ou 'link' informando a posição do resultado
 
+## Configurações
+
+Deve realizar pesquisas períodicas conforme configuração.
+As configureações podem ser vistas com endpoint
+
+### GET /config
+
+### POST /config
+
+Atualiza configurações para realização de pesquisa
+
+```
+{
+    terms: [
+        "termo 1"
+    ],
+    interval: {
+        minutes: 30
+    }
+}
+```
+
 Demais funcionalidades
 
 - Realizar a pesquisa por geolocalização, utilizando proxy ou vpn
