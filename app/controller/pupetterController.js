@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
+const mongo = require("../db/mongo");
 
 const TAG_AD = "uEierd";
 const TAG_RESULT = "g";
@@ -79,19 +80,8 @@ async function searchByTerm(term, target, pageLimit) {
 
   await extractResults(pageDOM, report, pageCount);
 
+  //save pdf
   await savePdf(pageDOM, term, pageCount);
-
-  if (HEADLESS) {
-    console.log("Salvando PDF");
-    const pdfPath = `resources/pdf/${term}_${pageCount}.pdf`;
-
-    if (!fs.existsSync(pdfPath)) {
-      await pageDOM.pdf({
-        path: pdfPath,
-        format: "a4",
-      });
-    }
-  }
 
   //Possui próxima página
   let hasNextButton = await pageDOM.evaluate(() => {
@@ -108,7 +98,18 @@ async function searchByTerm(term, target, pageLimit) {
       return document.getElementById("pnnext") !== null;
     });
   }
+  report.relatedQuestions = report.relatedQuestions.filter(
+    (este, i) => report.relatedQuestions.indexOf(este) === i
+  );
 
+  report.ralatedSearch = report.ralatedSearch.filter(
+    (este, i) => report.ralatedSearch.indexOf(este) === i
+  );
+  const db = new mongo();
+  const savedReport = await db.saveReport(report);
+  if (savedReport.insertedCount > 0) {
+    console.log("Report salvo");
+  }
   await browser.close();
   return report;
 }
@@ -120,10 +121,14 @@ async function searchByTerm(term, target, pageLimit) {
  * @param {*} pageCount
  */
 async function savePdf(page, term, pageCount) {
-  await page.pdf({
-    path: `resources/pdf/${term}_${pageCount}.pdf`,
-    format: "a4",
-  });
+  console.log("Salvando PDF");
+  const pdfPath = `resources/pdf/${term}_${pageCount}.pdf`;
+  if (!fs.existsSync(pdfPath)) {
+    await page.pdf({
+      path: pdfPath,
+      format: "a4",
+    });
+  }
 }
 
 /**
@@ -163,19 +168,17 @@ async function extractResults(pageDOM, report, pageCount) {
       const title = resultElement.getElementsByTagName("h3")[0].innerText;
       const description =
         resultElement.getElementsByClassName("IsZvec")[0].innerText;
-      const isAd = false;
       const result = {
         link: link,
         title: title,
         description: description,
-        isAd: isAd,
       };
       results.push(result);
     }
     return results;
   });
   result = result.map(function (res) {
-    return new Result(res.link, res.title, res.description, res.isAd);
+    return new Result(res.link, res.title, res.description);
   });
 
   page.results = result;
