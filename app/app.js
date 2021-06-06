@@ -8,7 +8,7 @@ app.use(
   })
 );
 
-const puppeteerController = require("./app/controller/pupetter");
+const puppeteerController = require("./controller/pupetter");
 
 // Test Api
 app.get("/", function (req, res) {
@@ -16,6 +16,9 @@ app.get("/", function (req, res) {
 });
 
 // Get Config
+// app.get('/config' function (req, res) {
+
+// });
 // Set Config (Post)
 
 // Do search
