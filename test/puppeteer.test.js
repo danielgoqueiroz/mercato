@@ -1,7 +1,9 @@
-const puppeteer = require("../app/controller/pupetter");
+const puppeteer = require("../app/controller/pupetterController");
 var expect = require("expect.js");
 
-it("Deve buscar resultados quando informado um termo", async function () {
+it.only("Deve buscar resultados quando informado um termo", async function () {
+  this.timeout(30000);
+
   const report = await puppeteer.searchByTerm(
     "manutenção preditiva",
     "certificacaoiso",
@@ -15,8 +17,8 @@ it("Deve buscar resultados quando informado um termo", async function () {
   expect(report.pagelimit).to.be.an("number");
   expect(report.date).to.be.an("object");
 
-  expect(report.relatedQuestions).to.be.an("object");
-  expect(report.ralatedSearch).to.be.an("object");
+  expect(report.relatedQuestions).to.be.an("array");
+  expect(report.ralatedSearch).to.be.an("array");
   expect(report.pages).to.be.an("array");
 
   report.pages.forEach((page) => {

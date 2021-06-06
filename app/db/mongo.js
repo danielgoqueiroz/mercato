@@ -23,19 +23,11 @@ class DB {
 
   async saveReport(report) {
     return await (await this.getCollection()).insertOne(report);
+    this.close();
   }
   async close() {
     (await this.client).close();
   }
 }
-//
-// getDbMercato() {
-// return async () => {
-//   const database = await this.client.db("mercato");
-//   return database;
-// };
-// return "test";
-// }
-// }
 
 module.exports = DB;

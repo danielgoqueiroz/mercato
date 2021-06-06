@@ -5,7 +5,7 @@ const pupperteer = require("../controller/pupetterController");
 async function job() {
   console.log("Agendamento");
 
-  date = new DateSchedule(null, "30", null);
+  date = new DateSchedule(null, "*/5", null);
   console.log(date);
   schedule.scheduleJob(
     `${date.second} ${date.minute} ${date.hour} * * *`,
@@ -14,7 +14,7 @@ async function job() {
         "Sensor sem fio de vibração",
         "Sensor sem fio de temperatura",
       ];
-      await puppeteerController.search(terms);
+      await pupperteer.searchByTerms(terms, "dynamox", 0);
     }
   );
 }

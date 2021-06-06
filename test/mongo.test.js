@@ -1,8 +1,8 @@
 const expect = require("expect.js");
 const Db = require("../app/db/mongo.js");
-const puppeteer = require("../app/controller/pupetter");
+const puppeteer = require("../app/controller/pupetterController");
 
-it.only("Deve retornar registros", async function () {
+it("Deve retornar registros", async function () {
   const db = new Db();
   const collection = await db.getCollection();
   const one = await collection.findOne({});
@@ -26,9 +26,7 @@ it("Deve salvar registro re reports no banco", async function () {
 
   const db = new Db();
   const collection = await db.getCollection();
-
   const reportSaved = await db.saveReport(report);
-
   expect(reportSaved.result.ok).to.be.equal(1);
 
   db.close();
