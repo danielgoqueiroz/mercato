@@ -1,0 +1,9 @@
+{
+  "name": "nodemon",
+  "homepage": "http://nodemon.io",
+  "nodemonConfig": {
+    "watch": ["app/controller/**"],
+    "ignore": ["./test/**", "./resources/**", "**.json"],
+    "delay": 2500
+  }
+}

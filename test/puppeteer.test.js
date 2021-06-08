@@ -1,7 +1,7 @@
 const puppeteer = require("../app/controller/pupetterController");
 var expect = require("expect.js");
 
-it.only("Deve buscar resultados quando informado um termo", async function () {
+it("Deve buscar resultados quando informado um termo", async function () {
   this.timeout(30000);
 
   const report = await puppeteer.searchByTerm(

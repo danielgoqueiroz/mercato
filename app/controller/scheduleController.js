@@ -1,20 +1,17 @@
 const schedule = require("node-schedule");
-const DateSchedule = require("../model/Date");
+const DateSchedule = require("../model/Interval");
 const pupperteer = require("../controller/pupetterController");
+const Db = require("../db/mongo");
 
 async function job() {
   console.log("Agendamento");
+  const db = new Db();
+  const conf = await db.getConfiguration();
 
-  date = new DateSchedule(null, "*/5", null);
-  console.log(date);
   schedule.scheduleJob(
-    `${date.second} ${date.minute} ${date.hour} * * *`,
+    `${conf.second} ${conf.minute} ${conf.hour} * * *`,
     async function () {
-      const terms = [
-        "Sensor sem fio de vibração",
-        "Sensor sem fio de temperatura",
-      ];
-      await pupperteer.searchByTerms(terms, "dynamox", 0);
+      await pupperteer.searchByTerms(conf.terms, conf.target, 0);
     }
   );
 }

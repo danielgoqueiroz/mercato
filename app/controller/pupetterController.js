@@ -44,18 +44,18 @@ async function searchByTerms(terms, target, pages) {
     const result = await searchByTerm(term, target, pages);
     results.push(result);
 
-    const date = new Date();
-    const dateFormated =
-      date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-    const jsonPath = path.resolve(
-      `resources/json/${dateFormated}_${term}.json`
-    );
-    fs.writeFileSync(jsonPath, JSON.stringify(result), function (err) {
-      if (err) {
-        console.error(err);
-      }
-      console.info(`Resultados salvos em ${jsonPath}`);
-    });
+    // const date = new Date();
+    // const dateFormated =
+    //   date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+    // const jsonPath = path.resolve(
+    //   `resources/json/${dateFormated}_${term}.json`
+    // );
+    // fs.writeFileSync(jsonPath, JSON.stringify(result), function (err) {
+    //   if (err) {
+    //     console.error(err);
+    //   }
+    //   console.info(`Resultados salvos em ${jsonPath}`);
+    // });
   }
 
   return results;

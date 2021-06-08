@@ -1,4 +1,4 @@
-class Date {
+class Interval {
   constructor(second, minute, hour) {
     this.second = second !== null ? second : "*";
     this.minute = minute !== null ? minute : "*";
@@ -6,4 +6,4 @@ class Date {
   }
 }
 
-module.exports = Date;
+module.exports = Interval;
