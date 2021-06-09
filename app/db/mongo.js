@@ -53,11 +53,16 @@ class DB {
     configLoaded.interval = confuguration.interval;
     configLoaded.terms = confuguration.terms;
     configLoaded.target = confuguration.target;
-    delete configLoaded._id;
 
-    var objectId = new ObjectId(configLoaded._id);
-
-    await collection.updateOne(objectId, configLoaded, { upsert: true });
+    try {
+      await collection.updateOne(
+        { _id: configLoaded._id },
+        { $set: configLoaded },
+        { upsert: true }
+      );
+    } catch (err) {
+      console.err(err);
+    }
 
     const consfSaved = await this.getConfiguration();
     return consfSaved;

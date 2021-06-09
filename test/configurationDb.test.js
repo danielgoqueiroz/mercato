@@ -1,9 +1,9 @@
 var expect = require("expect.js");
 const Db = require("../app/db/mongo");
-const Configuration = require("../app/model/Configuration");
+const Schedule = require("../app/model/Schedule");
 
-it.only("Deve salavar uma nova configuração", async function () {
-  const conf = new Configuration("dynamox");
+it("Deve salavar uma nova configuração", async function () {
+  const conf = new Schedule("dynamox");
   conf.addTerm("Manutençao preditiva");
   conf.setInterval("10", null, null);
 

@@ -23,14 +23,19 @@ class ScheduleController {
   }
 
   async update(schedule) {
+    console.info("Cancelando agendamento.");
     await scheduleModule.cancelJob();
+    console.info("Salvando novo agendamento.");
     const saved = await db.saveConfiguration(schedule);
+    console.info(`Agendamento ${saved}.`);
+
     this.job = scheduleModule.scheduleJob(
       `${saved.second} ${saved.minute} ${saved.hour} * * *`,
       async function () {
         await pupperteer.searchByTerms(saved.terms, saved.target, 0);
       }
     );
+    return await db.getConfiguration();
   }
 }
 
