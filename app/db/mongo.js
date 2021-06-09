@@ -1,5 +1,7 @@
 const { MongoClient } = require("mongodb");
-const Configuration = require("../model/Configuration");
+var ObjectId = require("mongodb").ObjectId;
+
+const Schedule = require("../model/Schedule");
 const url =
   "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false";
 
@@ -15,43 +17,50 @@ class DB {
     });
   }
   async getDb() {
+    if (this.client == null) {
+      this.client = await this.getClient();
+    }
     return await (await this.client).db("Mercato");
   }
-  async getCollection() {
+  async getReportCollection() {
     const database = await this.getDb();
     return database.collection("reports");
   }
 
+  async getConfigurationCollection() {
+    const database = await this.getDb();
+    return database.collection("configuration");
+  }
+
   async saveReport(report) {
-    return await (await this.getCollection()).insertOne(report);
-    this.close();
+    return await (await this.getReportCollection()).insertOne(report);
   }
 
   async getConfiguration() {
-    const db = await this.getDb();
-    const collection = await db.collection("configuration");
-    const conf = await collection.findOne();
-    if (conf === null) {
-      let conf = new Configuration("brasil");
-      conf.setInterval("1", null, null);
-      await collection.save(conf);
+    const collection = await this.getConfigurationCollection();
+    const schedule = await collection.findOne();
+    if (schedule === null) {
+      let schedule = new Schedule("brasil");
+      schedule.setInterval("1", null, null);
+      await collection.save(schedule);
     }
-    return await collection.findOne();
+    return schedule;
   }
   async saveConfiguration(confuguration) {
-    const configLoaded = this.getConfiguration();
-    const db = await this.getDb();
-    const collection = await db.collection("configuration");
-    const conf = await collection.findOne();
+    const configLoaded = await this.getConfiguration();
+    const collection = await this.getConfigurationCollection();
 
-    const confLoaded = await this.getConfiguration();
-    if (confLoaded) {
-      confLoaded.interval = confuguration.interval;
-      confLoaded.terms = confuguration.terms;
-      collection.insertOne(confLoaded);
-    }
+    configLoaded.interval = confuguration.interval;
+    configLoaded.terms = confuguration.terms;
+    configLoaded.target = confuguration.target;
+    delete configLoaded._id;
 
-    return await db.getConfiguration();
+    var objectId = new ObjectId(configLoaded._id);
+
+    await collection.updateOne(objectId, configLoaded, { upsert: true });
+
+    const consfSaved = await this.getConfiguration();
+    return consfSaved;
   }
 
   async close() {

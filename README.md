@@ -46,9 +46,29 @@ report: {
 Deve realizar pesquisas períodicas conforme configuração.
 As configureações podem ser vistas com endpoint
 
-### GET /config
+### GET /schedule
 
-### POST /config
+### POST /shedule
+
+Envia:
+
+```
+{
+    interval: Interval;
+    terms: [];
+    target: string
+}
+```
+
+Retorna:
+
+```
+{
+    interval: Interval;
+    terms: [];
+    target: string
+}
+```
 
 Atualiza configurações para realização de pesquisa
 

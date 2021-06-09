@@ -1,5 +1,5 @@
 const Interval = require("./Interval");
-class Configuration {
+class Schedule {
   constructor(target) {
     this.terms = [];
     this.interval = new Interval();
@@ -13,4 +13,4 @@ class Configuration {
   }
 }
 
-module.exports = Configuration;
+module.exports = Schedule;

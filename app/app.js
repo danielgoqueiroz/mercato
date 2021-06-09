@@ -8,7 +8,10 @@ app.use(
   })
 );
 
-const scheduleController = require("./controller/scheduleController");
+const ScheduleController = require("./controller/scheduleController");
+const scheduleController = new ScheduleController();
+const Configuration = require("./model/Schedule");
+
 const puppeteerController = require("./controller/pupetterController");
 
 // Test Api
@@ -16,10 +19,17 @@ app.get("/", function (req, res) {
   res.send("Test Get");
 });
 
+//Update schedule
+app.post("/schedule", async function (req, res) {
+  const schedule = req.body;
+  const response = await scheduleController.update(schedule);
+  res.status(200).send(response);
+});
+
 //Get Config
-app.get("/config", function (req, res) {
-  scheduleController();
-  res.send("Test Get");
+app.get("/schedule", async function (req, res) {
+  const response = await scheduleController.get();
+  res.status(200).send(response);
 });
 
 // Do search
@@ -38,7 +48,7 @@ app.post("/search", async function (req, res) {
 });
 
 // Init Server
-app.listen(3000, function () {
-  scheduleController();
+app.listen(3000, async function () {
+  await scheduleController.init();
   console.log("Mercato iniciado.");
 });
