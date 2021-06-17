@@ -19,19 +19,6 @@ app.get("/", function (req, res) {
   res.send("Test Get");
 });
 
-//Update schedule
-app.post("/schedule", async function (req, res) {
-  const schedule = req.body;
-  const response = await scheduleController.update(schedule);
-  res.status(200).send(response);
-});
-
-//Get Config
-app.get("/schedule", async function (req, res) {
-  const response = await scheduleController.get();
-  res.status(200).send(response);
-});
-
 // Do search
 app.post("/search", async function (req, res) {
   const terms = req.body.terms;
