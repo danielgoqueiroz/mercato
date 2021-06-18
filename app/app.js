@@ -12,31 +12,21 @@ const scheduleController = require("./controller/scheduleController");
 const puppeteerController = require("./controller/pupetterController");
 
 const schedule = require("./router/schedule");
+const search = require("./router/search");
 
 app.use("/schedule", schedule);
+app.use("/search", search);
 
 // Test Api
 app.get("/", function (req, res) {
   res.send("Test Get");
 });
 
-// Do search
-app.post("/search", async function (req, res) {
-  const terms = req.body.terms;
-  const target = req.body.target;
-  const pages = req.body.pages;
-  if (terms === undefined || terms === null || terms.length < 1) {
-    return res
-      .status(403)
-      .send({ message: `Valor de termos inválido: ${terms}` });
-  }
 
-  await puppeteerController.searchByTerms(terms, target, pages);
-  res.send("Test Get");
-});
+
 
 // Init Server
-app.listen(3000, function () {
-  scheduleController.start();
+app.listen(3000,  function () {
   console.log("Mercato iniciado.");
+  scheduleController.start();
 });

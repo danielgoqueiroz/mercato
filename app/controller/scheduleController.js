@@ -7,13 +7,11 @@ const db = new Db();
 
 let job = {};
 
-async function start() {
-  
+const start = async function () {
+  console.log("Realizando agendamento")
   const schedule = await db.getConfiguration();
-
     const rules = `${schedule.interval.second} ${schedule.interval.minute} ${schedule.interval.hour} * * *`;
     console.info(JSON.stringify(rules));
-
     var job = new CronJob(rules, async function() {
         console.log("Chamando métod agendado");
         await pupperteer.searchByTerms(schedule.terms, schedule.target, 0);
