@@ -1,22 +1,32 @@
-const scheduleModule = require("node-schedule");
+const CronJob = require('cron').CronJob;
+
 const DateSchedule = require("../model/Interval");
 const pupperteer = require("../controller/pupetterController");
 const Db = require("../db/mongo");
 const db = new Db();
 
-const init = async function () {
-  console.info("Agendamento carregado");
+let job = {};
+
+async function start() {
+  
   const schedule = await db.getConfiguration();
-  this.job = scheduleModule.scheduleJob(
-    `${schedule.second} ${schedule.minute} ${schedule.hour} * * *`,
-    async function () {
-      await pupperteer.searchByTerms(schedule.terms, schedule.target, 0);
-    }
-  );
+
+    const rules = `${schedule.interval.second} ${schedule.interval.minute} ${schedule.interval.hour} * * *`;
+    console.info(JSON.stringify(rules));
+
+    var job = new CronJob(rules, async function() {
+        console.log("Chamando métod agendado");
+        await pupperteer.searchByTerms(schedule.terms, schedule.target, 0);
+    }, null, true, 'America/Los_Angeles').start();
 };
 
 const get = async function () {
-  return await db.getConfiguration();
+  const conf = await db.getConfiguration();
+  const sch = {
+    job: this.job,
+    conf: conf,
+  };
+  return sch;
 };
 
 const update = async function (schedule) {
@@ -24,9 +34,8 @@ const update = async function (schedule) {
   await scheduleModule.cancelJob();
   console.info("Salvando novo agendamento.");
   const saved = await db.saveConfiguration(schedule);
-  console.info(`Agendamento ${saved}.`);
-
-  this.job = scheduleModule.scheduleJob(
+  console.info(`Agendamento ${JSON.stringify(saved)}.`);
+  job = scheduleModule.scheduleJob(
     `${saved.second} ${saved.minute} ${saved.hour} * * *`,
     async function () {
       await pupperteer.searchByTerms(saved.terms, saved.target, 0);
@@ -35,4 +44,4 @@ const update = async function (schedule) {
   return await db.getConfiguration();
 };
 
-module.exports = { init, get, update };
+module.exports = { start, get, update };

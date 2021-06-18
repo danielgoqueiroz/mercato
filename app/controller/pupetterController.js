@@ -28,6 +28,7 @@ const { REPL_MODE_STRICT } = require("repl");
  * @returns
  */
 async function searchByTerms(terms, target, pages) {
+  console.info(`Realizando busca pelos termos ${terms}. Target: ${target}`);
   if (pages === undefined || pages === null || pages < 0) {
     pages = 1;
   }

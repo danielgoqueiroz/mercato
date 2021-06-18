@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/danielgoqueiroz/mercato#readme",
   "dependencies": {
+    "cron": "^1.8.2",
     "expect.js": "^0.3.1",
     "express": "^4.17.1",
     "jest": "^27.0.1",
