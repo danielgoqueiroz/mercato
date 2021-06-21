@@ -105,3 +105,9 @@ Tutorial - https://www.codota.com/code/javascript/functions/puppeteer/Page/click
 # Mocha
 
 Doc - https://mochajs.org/
+
+
+## Docker 
+### Mongo 
+docker run -v ~/docker --name mongodb -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongo -e MONGO_INITDB_ROOT_PASSWORD=mercato mongo
+

@@ -85,7 +85,7 @@ async function searchByTerm(term, target, pageLimit) {
   await savePdf(pageDOM, term, pageCount);
 
   //Possui próxima página
-  const hasNextButton = await pageDOM.evaluate(() => {
+  let hasNextButton = await pageDOM.evaluate(() => {
     return document.getElementById("pnnext") !== null;
   });
 

@@ -7,8 +7,9 @@ const db = new Db();
 let job = {};
 
 const start = async function () {
-  console.log("Realizando agendamento")
+  console.log("Realizando agendamento");
   const schedule = await db.getConfiguration();
+  console.log(JSON.stringify(schedule));
     const time = `${schedule.interval.second} ${schedule.interval.minute} ${schedule.interval.hour} * * *`;
     console.info(JSON.stringify(time));
     job = new CronJob(time, async function() {
