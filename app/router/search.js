@@ -1,8 +1,9 @@
 const express = require("express");
 let app = express.Router();
+const puppeteerController = require("../controller/pupetterController");
 
 // Do search
-app.post("/search", async function (req, res) {
+app.post("/", async function (req, res) {
     const terms = req.body.terms;
     const target = req.body.target;
     const pages = req.body.pages;

@@ -1,9 +1,8 @@
 {
-  "name": "nodemon",
-  "homepage": "http://nodemon.io",
-  "nodemonConfig": {
-    "watch": ["app/controller/**"],
-    "ignore": ["./test/**", "./resources/**", "**.json"],
-    "delay": 2500
+  "verbose": true,
+  "ignore": ["*.test.js", "resources/*"],
+  "execMap": {
+    "rb": "ruby",
+    "pde": "processing --sketch={{pwd}} --run"
   }
 }

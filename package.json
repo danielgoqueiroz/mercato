@@ -4,7 +4,7 @@
   "description": "Acompanhamento de concorrentes",
   "main": "app/app.js",
   "scripts": {
-    "dev": "nodemon server app.js",
+    "dev": "nodemon app.js",
     "test": "mocha"
   },
   "repository": {
